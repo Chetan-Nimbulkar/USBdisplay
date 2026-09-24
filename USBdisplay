@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# Prefer python3 (Debian may lack a `python` alias); fall back to `python`.
+if command -v python3 >/dev/null 2>&1; then
+  exec python3 "$project_dir/bridge/server.py" "$@"
+else
+  exec python "$project_dir/bridge/server.py" "$@"
+fi
