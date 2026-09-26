@@ -1,0 +1,114 @@
+2026-09-26 16:17:36,302 INFO session log /home/kali/Projects/USBdisplay/logs/usbdisplay-20260926-161736-302061.log
+2026-09-26 16:17:36,518 INFO selected compositor backend=gnome
+2026-09-26 16:17:36,522 INFO locked Android device d9a9eec8 usb:1-2 SM_T355Y
+2026-09-26 16:17:36,523 INFO GNOME virtual output will be created by the ScreenCast portal at 800x600@30
+adb: error: listener 'tcp:18958' not found
+18958
+2026-09-26 16:17:36,627 INFO waiting for receiver on 127.0.0.1:18958
+Starting: Intent { cmp=com.usbdisplay.receiver/.MainActivity (has extras) }
+2026-09-26 16:17:40,269 INFO receiver connected from 127.0.0.1:50909
+2026-09-26 16:17:40,269 INFO starting persistent H.264 capture backend=gnome-portal: /usr/bin/python3 /home/kali/Projects/USBdisplay/bridge/gnome_capture.py --width 800 --height 600 --fps 30 --refresh 30 --crf 23
+2026-09-26 16:17:40,269 INFO streaming codec=h264 output=USBDisplay 800x600@30 to d9a9eec8 usb:1-2 SM_T355Y
+2026-09-26 16:17:42,255 DEBUG gnome-portal: GNOME portal stream node=147 800x600@30 capture=30fps
+2026-09-26 16:17:45,285 INFO stats fps=5.8 bitrate=0.03Mbps encoded=29 sent=29 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:17:50,310 INFO stats fps=38.2 bitrate=0.20Mbps encoded=221 sent=221 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:17:55,337 INFO stats fps=32.8 bitrate=0.41Mbps encoded=386 sent=386 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:00,355 INFO stats fps=30.1 bitrate=0.53Mbps encoded=537 sent=537 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:05,373 INFO stats fps=29.3 bitrate=0.28Mbps encoded=684 sent=684 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:10,399 INFO stats fps=30.0 bitrate=0.47Mbps encoded=835 sent=835 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:15,419 INFO stats fps=28.9 bitrate=0.21Mbps encoded=980 sent=980 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:20,432 INFO stats fps=29.5 bitrate=0.30Mbps encoded=1128 sent=1128 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:25,454 INFO stats fps=8.4 bitrate=0.03Mbps encoded=1170 sent=1170 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:30,469 INFO stats fps=52.8 bitrate=0.35Mbps encoded=1435 sent=1435 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:35,498 INFO stats fps=28.8 bitrate=0.15Mbps encoded=1580 sent=1580 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:40,513 INFO stats fps=28.1 bitrate=0.22Mbps encoded=1721 sent=1721 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:45,537 INFO stats fps=0.0 bitrate=0.00Mbps encoded=1721 sent=1721 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:50,561 INFO stats fps=57.9 bitrate=0.30Mbps encoded=2012 sent=2012 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:18:55,583 INFO stats fps=0.4 bitrate=0.00Mbps encoded=2014 sent=2014 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:00,598 INFO stats fps=0.0 bitrate=0.00Mbps encoded=2014 sent=2014 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:05,615 INFO stats fps=66.2 bitrate=0.37Mbps encoded=2346 sent=2346 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:10,634 INFO stats fps=0.0 bitrate=0.00Mbps encoded=2346 sent=2346 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:15,657 INFO stats fps=0.0 bitrate=0.00Mbps encoded=2346 sent=2346 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:20,670 INFO stats fps=104.3 bitrate=0.50Mbps encoded=2869 sent=2869 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:25,691 INFO stats fps=38.8 bitrate=0.20Mbps encoded=3064 sent=3064 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:30,704 INFO stats fps=25.9 bitrate=0.11Mbps encoded=3194 sent=3194 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:35,719 INFO stats fps=19.3 bitrate=0.13Mbps encoded=3291 sent=3291 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:40,738 INFO stats fps=39.1 bitrate=0.23Mbps encoded=3487 sent=3487 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:45,753 INFO stats fps=38.1 bitrate=0.18Mbps encoded=3678 sent=3678 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:50,769 INFO stats fps=27.1 bitrate=0.15Mbps encoded=3814 sent=3814 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:19:55,798 INFO stats fps=26.6 bitrate=0.18Mbps encoded=3948 sent=3948 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:00,809 INFO stats fps=35.3 bitrate=0.17Mbps encoded=4125 sent=4125 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:05,840 INFO stats fps=19.9 bitrate=0.11Mbps encoded=4225 sent=4225 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:10,857 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4225 sent=4225 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:15,874 INFO stats fps=57.0 bitrate=0.31Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:20,901 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:25,922 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:30,941 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:35,963 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:40,981 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:45,998 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:51,015 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:20:56,034 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:01,053 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:06,085 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:11,102 INFO stats fps=0.0 bitrate=0.00Mbps encoded=4511 sent=4511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:16,116 INFO stats fps=219.8 bitrate=1.10Mbps encoded=5613 sent=5613 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:21,130 INFO stats fps=136.6 bitrate=0.66Mbps encoded=6298 sent=6298 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:26,152 INFO stats fps=67.9 bitrate=0.36Mbps encoded=6639 sent=6639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:31,174 INFO stats fps=0.0 bitrate=0.00Mbps encoded=6639 sent=6639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:36,187 INFO stats fps=73.6 bitrate=0.43Mbps encoded=7008 sent=7008 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:41,204 INFO stats fps=29.1 bitrate=0.24Mbps encoded=7154 sent=7154 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:46,223 INFO stats fps=31.7 bitrate=0.21Mbps encoded=7313 sent=7313 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:51,235 INFO stats fps=28.7 bitrate=0.25Mbps encoded=7457 sent=7457 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:21:56,256 INFO stats fps=10.8 bitrate=0.06Mbps encoded=7511 sent=7511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:01,270 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7511 sent=7511 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:06,298 INFO stats fps=52.3 bitrate=0.27Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:11,317 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:16,338 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:21,363 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:26,387 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:31,406 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:36,420 INFO stats fps=0.0 bitrate=0.00Mbps encoded=7774 sent=7774 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:41,438 INFO stats fps=82.1 bitrate=0.39Mbps encoded=8186 sent=8186 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:46,451 INFO stats fps=148.2 bitrate=0.75Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:51,468 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:22:56,482 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:01,496 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:06,525 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:11,543 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:16,565 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:21,589 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:26,608 INFO stats fps=0.0 bitrate=0.00Mbps encoded=8929 sent=8929 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:31,623 INFO stats fps=226.5 bitrate=1.13Mbps encoded=10065 sent=10065 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:36,647 INFO stats fps=60.7 bitrate=0.30Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:41,663 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:46,679 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:51,693 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:23:56,706 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:01,718 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:06,737 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:11,752 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:16,792 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:21,813 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:26,839 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:31,854 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:36,870 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:41,886 INFO stats fps=0.0 bitrate=0.00Mbps encoded=10370 sent=10370 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:46,902 INFO stats fps=181.0 bitrate=0.90Mbps encoded=11278 sent=11278 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:51,916 INFO stats fps=271.5 bitrate=1.37Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:24:56,931 INFO stats fps=0.0 bitrate=0.00Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:01,949 INFO stats fps=0.0 bitrate=0.00Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:06,963 INFO stats fps=0.0 bitrate=0.00Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:11,980 INFO stats fps=0.0 bitrate=0.00Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:16,994 INFO stats fps=0.0 bitrate=0.00Mbps encoded=12639 sent=12639 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:22,019 INFO stats fps=221.5 bitrate=1.10Mbps encoded=13752 sent=13752 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:27,034 INFO stats fps=34.7 bitrate=0.22Mbps encoded=13926 sent=13926 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:32,051 INFO stats fps=27.7 bitrate=0.17Mbps encoded=14065 sent=14065 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:37,065 INFO stats fps=0.0 bitrate=0.00Mbps encoded=14065 sent=14065 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:42,082 INFO stats fps=57.6 bitrate=0.37Mbps encoded=14354 sent=14354 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:47,101 INFO stats fps=13.9 bitrate=0.08Mbps encoded=14424 sent=14424 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:52,119 INFO stats fps=4.8 bitrate=0.04Mbps encoded=14448 sent=14448 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:25:57,139 INFO stats fps=47.8 bitrate=0.30Mbps encoded=14688 sent=14688 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 16:26:01,479 INFO session finished frames=14689 average_bitrate=0.17Mbps dropped=0 backpressure=0 blocked=0.00s max_queue=2/2
+2026-09-26 16:26:01,682 ERROR capture producer stopped unexpectedly
+2026-09-26 16:26:01,682 INFO log saved to /home/kali/Projects/USBdisplay/logs/usbdisplay-20260926-161736-302061.log

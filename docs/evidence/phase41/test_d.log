@@ -1,0 +1,44 @@
+2026-09-26 18:41:40,284 INFO session log /home/kali/Projects/USBdisplay/logs/usbdisplay-20260926-184140-284494.log
+2026-09-26 18:41:40,614 INFO selected compositor backend=gnome
+2026-09-26 18:41:40,620 INFO locked Android device d9a9eec8 usb:1-2 SM_T355Y
+2026-09-26 18:41:40,620 INFO GNOME virtual output will be created by the ScreenCast portal at 800x600@30
+adb: error: listener 'tcp:18958' not found
+18958
+2026-09-26 18:41:40,716 INFO waiting for receiver on 127.0.0.1:18958
+Starting: Intent { cmp=com.usbdisplay.receiver/.MainActivity (has extras) }
+2026-09-26 18:41:44,358 INFO receiver connected from 127.0.0.1:54355
+2026-09-26 18:41:44,358 INFO starting persistent H.264 capture backend=gnome-portal: /usr/bin/python3 /home/kali/Projects/USBdisplay/bridge/gnome_capture.py --width 800 --height 600 --fps 30 --refresh 30 --crf 23 --cursor-mode auto
+2026-09-26 18:41:44,359 INFO streaming codec=h264 output=USBDisplay 800x600@30 to d9a9eec8 usb:1-2 SM_T355Y
+2026-09-26 18:41:46,684 DEBUG gnome-portal: GNOME portal stream node=131 800x600@30 capture=30fps
+2026-09-26 18:41:49,390 INFO stats fps=8.9 bitrate=0.05Mbps encoded=45 sent=45 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:41:54,419 INFO stats fps=0.0 bitrate=0.00Mbps encoded=45 sent=45 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:41:59,448 INFO stats fps=57.1 bitrate=0.28Mbps encoded=332 sent=332 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:04,469 INFO stats fps=23.5 bitrate=0.09Mbps encoded=450 sent=450 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:09,489 INFO stats fps=44.2 bitrate=0.22Mbps encoded=672 sent=672 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:14,505 INFO stats fps=0.0 bitrate=0.00Mbps encoded=672 sent=672 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:19,522 INFO stats fps=0.0 bitrate=0.00Mbps encoded=672 sent=672 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:24,537 INFO stats fps=59.2 bitrate=0.28Mbps encoded=969 sent=969 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:29,559 INFO stats fps=44.0 bitrate=0.20Mbps encoded=1190 sent=1190 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:34,574 INFO stats fps=0.0 bitrate=0.00Mbps encoded=1190 sent=1190 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:39,588 INFO stats fps=18.4 bitrate=0.08Mbps encoded=1282 sent=1282 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:44,609 INFO stats fps=79.7 bitrate=0.39Mbps encoded=1682 sent=1682 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:49,641 INFO stats fps=34.8 bitrate=0.15Mbps encoded=1857 sent=1857 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:54,665 INFO stats fps=34.8 bitrate=0.47Mbps encoded=2032 sent=2032 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:42:59,697 INFO stats fps=27.6 bitrate=0.53Mbps encoded=2171 sent=2171 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:04,728 INFO stats fps=31.2 bitrate=0.35Mbps encoded=2328 sent=2328 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:09,749 INFO stats fps=28.7 bitrate=0.31Mbps encoded=2472 sent=2472 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:14,781 INFO stats fps=29.8 bitrate=0.31Mbps encoded=2622 sent=2622 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:19,797 INFO stats fps=29.9 bitrate=0.31Mbps encoded=2772 sent=2772 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:24,829 INFO stats fps=26.2 bitrate=0.29Mbps encoded=2904 sent=2904 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:29,857 INFO stats fps=28.0 bitrate=0.43Mbps encoded=3045 sent=3045 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:34,879 INFO stats fps=0.0 bitrate=0.00Mbps encoded=3045 sent=3045 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:39,901 INFO stats fps=52.6 bitrate=0.63Mbps encoded=3309 sent=3309 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:44,928 INFO stats fps=21.3 bitrate=0.21Mbps encoded=3416 sent=3416 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:49,957 INFO stats fps=0.0 bitrate=0.00Mbps encoded=3416 sent=3416 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:43:54,979 INFO stats fps=0.0 bitrate=0.00Mbps encoded=3416 sent=3416 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:44:00,007 INFO stats fps=101.0 bitrate=0.98Mbps encoded=3924 sent=3924 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:44:05,039 INFO stats fps=36.6 bitrate=0.35Mbps encoded=4108 sent=4108 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:44:10,278 INFO stats fps=26.7 bitrate=0.27Mbps encoded=4248 sent=4248 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:44:15,315 INFO stats fps=21.8 bitrate=0.23Mbps encoded=4358 sent=4358 dropped=0 backpressure=0 blocked=0.00s queue=0/2
+2026-09-26 18:44:17,538 INFO session finished frames=4358 average_bitrate=0.24Mbps dropped=0 backpressure=0 blocked=0.00s max_queue=1/2
+2026-09-26 18:44:18,073 INFO log saved to /home/kali/Projects/USBdisplay/logs/usbdisplay-20260926-184140-284494.log

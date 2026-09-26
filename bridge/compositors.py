@@ -109,6 +109,7 @@ class CompositorBackend:
         constant_fps: bool,
         quality: int,
         include_cursor: bool,
+        cursor_mode: str = "auto",
     ) -> Producer:
         raise NotImplementedError
 
@@ -311,6 +312,7 @@ class GnomeBackend(CompositorBackend):
             refresh=int(options["refresh"]),
             crf=crf,
             python=sys.executable,
+            cursor_mode=options.get("cursor_mode", "auto"),
         )
 
 

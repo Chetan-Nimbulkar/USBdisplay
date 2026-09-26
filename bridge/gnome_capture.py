@@ -23,7 +23,19 @@ SCREENCAST_INTERFACE = "org.freedesktop.portal.ScreenCast"
 REQUEST_INTERFACE = "org.freedesktop.portal.Request"
 SESSION_INTERFACE = "org.freedesktop.portal.Session"
 SOURCE_VIRTUAL = 4
-CURSOR_EMBEDDED = 2
+CURSOR_EMBEDDED = 1
+CURSOR_METADATA = 2
+CURSOR_HIDDEN = 0
+
+
+def cursor_mode_to_value(mode: str) -> int:
+    """Convert cursor mode string to portal cursor mode value."""
+    return {
+        "embedded": CURSOR_EMBEDDED,
+        "metadata": CURSOR_METADATA,
+        "hidden": CURSOR_HIDDEN,
+        "auto": CURSOR_METADATA,  # default to metadata for lower latency
+    }.get(mode, CURSOR_METADATA)
 
 
 def token(prefix: str) -> str:
@@ -35,7 +47,7 @@ class PortalError(RuntimeError):
 
 
 class ScreenCastPortal:
-    def __init__(self, timeout_seconds: int = 120) -> None:
+    def __init__(self, timeout_seconds: int = 120, cursor_mode: str = "auto") -> None:
         self.connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
         self.proxy = Gio.DBusProxy.new_sync(
             self.connection,
@@ -48,12 +60,16 @@ class ScreenCastPortal:
         )
         self.timeout_seconds = timeout_seconds
         self.session_path: str | None = None
+        self.cursor_mode = cursor_mode
         source_types = self.proxy.get_cached_property("AvailableSourceTypes")
         if source_types is not None and not int(source_types.unpack()) & SOURCE_VIRTUAL:
             raise PortalError("the active ScreenCast portal does not support virtual monitors")
         cursor_modes = self.proxy.get_cached_property("AvailableCursorModes")
-        if cursor_modes is not None and not int(cursor_modes.unpack()) & CURSOR_EMBEDDED:
-            raise PortalError("the active ScreenCast portal cannot embed the mouse cursor")
+        if cursor_modes is not None:
+            available = int(cursor_modes.unpack())
+            cursor_value = cursor_mode_to_value(cursor_mode)
+            if not available & cursor_value:
+                raise PortalError(f"the active ScreenCast portal does not support cursor mode '{cursor_mode}'")
 
     def _request(self, method: str, parameters: GLib.Variant) -> dict[str, object]:
         loop = GLib.MainLoop()
@@ -144,6 +160,7 @@ class ScreenCastPortal:
 
     def select_virtual_source(self) -> None:
         assert self.session_path is not None
+        cursor_value = cursor_mode_to_value(self.cursor_mode)
         self._request(
             "SelectSources",
             GLib.Variant(
@@ -154,7 +171,7 @@ class ScreenCastPortal:
                         "handle_token": GLib.Variant("s", token("select")),
                         "types": GLib.Variant("u", SOURCE_VIRTUAL),
                         "multiple": GLib.Variant("b", False),
-                        "cursor_mode": GLib.Variant("u", CURSOR_EMBEDDED),
+                        "cursor_mode": GLib.Variant("u", cursor_mode_to_value(self.cursor_mode)),
                     },
                 ),
             ),
@@ -284,13 +301,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fps", type=int, required=True)
     parser.add_argument("--refresh", type=int, required=True)
     parser.add_argument("--crf", type=int, required=True)
+    parser.add_argument(
+        "--cursor-mode",
+        choices=("embedded", "metadata", "hidden", "auto"),
+        default="auto",
+        help="Cursor capture mode: embedded (composited), metadata (separate stream), hidden (no cursor), auto (default)",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     Gst.init(None)
-    portal = ScreenCastPortal()
+    portal = ScreenCastPortal(cursor_mode=args.cursor_mode)
     pipeline: Gst.Pipeline | None = None
     pipewire_fd = -1
     loop = GLib.MainLoop()

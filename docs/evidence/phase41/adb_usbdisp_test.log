@@ -1,0 +1,20 @@
+09-26 18:38:18.019 14037 14090 I USBDISP : first IDR AU seq=0 len=10359 head=000000010910000000016742c01fda03
+09-26 18:38:18.026 14037 14090 I USBDISP : first frame received seq=0 codec=2 len=10359
+09-26 18:38:18.026 14037 14090 I USBDISP : first frame rendered 800x600
+09-26 18:38:34.829 14037 14090 I USBDISP : RX: frames=64 rendered=60 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=2.9 800x608
+09-26 18:38:35.849 14037 14090 I USBDISP : RX: frames=124 rendered=120 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=5.5 800x608
+09-26 18:38:36.865 14037 14090 I USBDISP : RX: frames=184 rendered=180 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=7.9 800x608
+09-26 18:38:37.845 14037 14090 I USBDISP : RX: frames=243 rendered=240 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=10.1 800x608
+09-26 18:38:37.846 14037 14090 I USBDISP : RX: frames=244 rendered=240 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=10.1 800x608
+09-26 18:38:38.864 14037 14090 I USBDISP : RX: frames=303 rendered=300 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=12.1 800x608
+09-26 18:38:38.865 14037 14090 I USBDISP : RX: frames=304 rendered=300 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=12.1 800x608
+09-26 18:38:39.878 14037 14090 I USBDISP : RX: frames=363 rendered=360 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=13.9 800x608
+09-26 18:38:39.880 14037 14090 I USBDISP : RX: frames=364 rendered=360 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=13.9 800x608
+09-26 18:38:40.894 14037 14090 I USBDISP : RX: frames=423 rendered=420 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=15.6 800x608
+09-26 18:38:40.896 14037 14090 I USBDISP : RX: frames=424 rendered=420 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=15.6 800x608
+09-26 18:38:41.896 14037 14090 I USBDISP : RX: frames=483 rendered=480 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=17.2 800x608
+09-26 18:38:41.897 14037 14090 I USBDISP : RX: frames=484 rendered=480 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=17.2 800x608
+09-26 18:38:52.347 14037 14090 I USBDISP : RX: frames=602 rendered=600 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=15.7 800x608
+09-26 18:38:52.348 14037 14090 I USBDISP : RX: frames=603 rendered=600 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=15.7 800x608
+09-26 18:38:52.351 14037 14090 I USBDISP : RX: frames=604 rendered=600 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=15.7 800x608
+09-26 18:38:53.363 14037 14090 I USBDISP : RX: frames=662 rendered=660 gaps=0 crc=0 badlen=0 badcodec=0 decode_errors=0 dropped=0 fps=16.8 800x608

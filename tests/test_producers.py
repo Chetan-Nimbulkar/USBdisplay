@@ -80,6 +80,8 @@ class AnnexBParserTests(unittest.TestCase):
                 "60",
                 "--crf",
                 "23",
+                "--cursor-mode",
+                "auto",
             ],
         )
 
