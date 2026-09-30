@@ -1,0 +1,17 @@
+# Documentation / runtime data
+/logs/
+/docs/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build artifacts
+target/
+*.apk
+
+# Local/generated experiment binaries
+experiments/phase42c_cursor_probe
+
+

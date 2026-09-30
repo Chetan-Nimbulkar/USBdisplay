@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""GNOME ScreenCast portal to persistent Annex-B H.264 stdout stream."""
+"""GNOME portal capture with clock-driven persistent Annex-B H.264 output."""
 
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import os
 import signal
 import sys
@@ -23,9 +24,9 @@ SCREENCAST_INTERFACE = "org.freedesktop.portal.ScreenCast"
 REQUEST_INTERFACE = "org.freedesktop.portal.Request"
 SESSION_INTERFACE = "org.freedesktop.portal.Session"
 SOURCE_VIRTUAL = 4
-CURSOR_EMBEDDED = 1
-CURSOR_METADATA = 2
-CURSOR_HIDDEN = 0
+CURSOR_HIDDEN = 1
+CURSOR_EMBEDDED = 2
+CURSOR_METADATA = 4
 
 
 def cursor_mode_to_value(mode: str) -> int:
@@ -34,7 +35,7 @@ def cursor_mode_to_value(mode: str) -> int:
         "embedded": CURSOR_EMBEDDED,
         "metadata": CURSOR_METADATA,
         "hidden": CURSOR_HIDDEN,
-        "auto": CURSOR_METADATA,  # default to metadata for lower latency
+        "auto": CURSOR_EMBEDDED,
     }.get(mode, CURSOR_METADATA)
 
 
@@ -69,7 +70,9 @@ class ScreenCastPortal:
             available = int(cursor_modes.unpack())
             cursor_value = cursor_mode_to_value(cursor_mode)
             if not available & cursor_value:
-                raise PortalError(f"the active ScreenCast portal does not support cursor mode '{cursor_mode}'")
+                raise PortalError(
+                    f"the active ScreenCast portal does not support cursor mode '{cursor_mode}'"
+                )
 
     def _request(self, method: str, parameters: GLib.Variant) -> dict[str, object]:
         loop = GLib.MainLoop()
@@ -160,7 +163,6 @@ class ScreenCastPortal:
 
     def select_virtual_source(self) -> None:
         assert self.session_path is not None
-        cursor_value = cursor_mode_to_value(self.cursor_mode)
         self._request(
             "SelectSources",
             GLib.Variant(
@@ -171,7 +173,9 @@ class ScreenCastPortal:
                         "handle_token": GLib.Variant("s", token("select")),
                         "types": GLib.Variant("u", SOURCE_VIRTUAL),
                         "multiple": GLib.Variant("b", False),
-                        "cursor_mode": GLib.Variant("u", cursor_mode_to_value(self.cursor_mode)),
+                        "cursor_mode": GLib.Variant(
+                            "u", cursor_mode_to_value(self.cursor_mode)
+                        ),
                     },
                 ),
             ),
@@ -194,7 +198,9 @@ class ScreenCastPortal:
         if isinstance(streams, GLib.Variant):
             streams = streams.unpack()
         if len(streams) != 1:  # type: ignore[arg-type]
-            raise PortalError(f"portal returned {len(streams)} streams, expected one")  # type: ignore[arg-type]
+            raise PortalError(
+                f"portal returned {len(streams)} streams, expected one"  # type: ignore[arg-type]
+            )
         return int(streams[0][0])  # type: ignore[index]
 
     def open_pipewire_remote(self) -> int:
@@ -234,13 +240,7 @@ class ScreenCastPortal:
 
 
 def watch_parent_exit(parent_pid: int, loop: GLib.MainLoop) -> None:
-    """Exit if the orchestrator died without stopping us.
-
-    The portal session (and its virtual monitor) dies with this process,
-    and Mutter also reaps the session on peer disconnect, so terminating
-    here can never leak the output. Covers SIGKILL-style orchestrator
-    death where no teardown code runs.
-    """
+    """Exit if the orchestrator died without stopping us."""
 
     def _watch() -> None:
         while True:
@@ -255,8 +255,11 @@ def watch_parent_exit(parent_pid: int, loop: GLib.MainLoop) -> None:
                 time.sleep(2)
                 os._exit(3)
 
-    thread = threading.Thread(target=_watch, name="usbdisplay-parent-watch", daemon=True)
-    thread.start()
+    threading.Thread(
+        target=_watch,
+        name="usbdisplay-parent-watch",
+        daemon=True,
+    ).start()
 
 
 def source_caps() -> str:
@@ -264,16 +267,124 @@ def source_caps() -> str:
     return "video/x-raw"
 
 
-def build_pipeline(fd: int, node_id: int, args: argparse.Namespace) -> Gst.Pipeline:
+@dataclass(frozen=True)
+class CachedFrame:
+    payload: bytes
+    generation: int
+    source_ns: int
+
+
+class LatestFrameCache:
+    """Thread-safe one-frame cache backed by application-owned bytes."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._available = threading.Event()
+        self._frame: CachedFrame | None = None
+        self._generation = 0
+
+    def replace(self, payload: bytes, source_ns: int) -> CachedFrame:
+        with self._lock:
+            self._generation += 1
+            self._frame = CachedFrame(payload, self._generation, source_ns)
+            frame = self._frame
+        self._available.set()
+        return frame
+
+    def wait(self, timeout: float) -> bool:
+        return self._available.wait(timeout)
+
+    def snapshot(self) -> CachedFrame | None:
+        with self._lock:
+            return self._frame
+
+
+class CadenceMetrics:
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.source_frames = 0
+        self.output_frames = 0
+        self.new_frames = 0
+        self.repeated_frames = 0
+        self.first_source_ns: int | None = None
+        self.first_output_ns: int | None = None
+        self.last_output_ns: int | None = None
+        self.max_output_gap_ms = 0.0
+
+    def add_source(self, stamp_ns: int) -> int:
+        with self._lock:
+            self.source_frames += 1
+            if self.first_source_ns is None:
+                self.first_source_ns = stamp_ns
+            return self.source_frames
+
+    def add_output(self, stamp_ns: int, repeated: bool) -> None:
+        with self._lock:
+            if self.first_output_ns is None:
+                self.first_output_ns = stamp_ns
+            if self.last_output_ns is not None:
+                gap_ms = (stamp_ns - self.last_output_ns) / 1_000_000
+                self.max_output_gap_ms = max(self.max_output_gap_ms, gap_ms)
+            self.last_output_ns = stamp_ns
+            self.output_frames += 1
+            if repeated:
+                self.repeated_frames += 1
+            else:
+                self.new_frames += 1
+
+    def snapshot(self) -> tuple[int, int, int, int, float, float | None]:
+        with self._lock:
+            startup_ms = (
+                (self.first_output_ns - self.first_source_ns) / 1_000_000
+                if self.first_source_ns is not None
+                and self.first_output_ns is not None
+                else None
+            )
+            return (
+                self.source_frames,
+                self.output_frames,
+                self.new_frames,
+                self.repeated_frames,
+                self.max_output_gap_ms,
+                startup_ms,
+            )
+
+
+def raw_caps(args: argparse.Namespace) -> str:
+    return (
+        f"video/x-raw,format=I420,width={args.width},height={args.height},"
+        "pixel-aspect-ratio=1/1"
+    )
+
+
+def build_source_pipeline(
+    fd: int,
+    node_id: int,
+    args: argparse.Namespace,
+) -> Gst.Pipeline:
     pipeline = Gst.parse_launch(
         " ".join(
             [
                 f"pipewiresrc fd={fd} path={node_id} do-timestamp=true",
                 f"! {source_caps()}",
-                "! videorate",
-                "! videoscale",
                 "! videoconvert",
-                f"! video/x-raw,width={args.width},height={args.height},framerate={args.fps}/1,format=I420",
+                "! videoscale",
+                f"! {raw_caps(args)}",
+                "! appsink name=source_sink emit-signals=true max-buffers=1 drop=true sync=false",
+            ]
+        )
+    )
+    if not isinstance(pipeline, Gst.Pipeline):
+        raise RuntimeError("GStreamer did not create the source pipeline")
+    return pipeline
+
+
+def build_output_pipeline(args: argparse.Namespace) -> Gst.Pipeline:
+    pipeline = Gst.parse_launch(
+        " ".join(
+            [
+                "appsrc name=output_source is-live=true format=time block=true max-buffers=2",
+                f"caps={raw_caps(args)},framerate={args.fps}/1",
                 "! x264enc",
                 "byte-stream=true",
                 "aud=true",
@@ -282,15 +393,16 @@ def build_pipeline(fd: int, node_id: int, args: argparse.Namespace) -> Gst.Pipel
                 f"key-int-max={args.fps}",
                 "pass=qual",
                 f"quantizer={args.crf}",
-                "threads=2",
+                "threads=1",
                 f'option-string="repeat-headers=1:scenecut=0:min-keyint={args.fps}"',
                 "! video/x-h264,stream-format=byte-stream,alignment=au,profile=baseline",
+                "! h264parse config-interval=-1",
                 "! fdsink fd=1 sync=false",
             ]
         )
     )
     if not isinstance(pipeline, Gst.Pipeline):
-        raise RuntimeError("GStreamer did not create a pipeline")
+        raise RuntimeError("GStreamer did not create the output pipeline")
     return pipeline
 
 
@@ -305,7 +417,7 @@ def parse_args() -> argparse.Namespace:
         "--cursor-mode",
         choices=("embedded", "metadata", "hidden", "auto"),
         default="auto",
-        help="Cursor capture mode: embedded (composited), metadata (separate stream), hidden (no cursor), auto (default)",
+        help="Cursor capture mode: embedded, metadata, hidden, or auto",
     )
     return parser.parse_args()
 
@@ -314,13 +426,19 @@ def main() -> int:
     args = parse_args()
     Gst.init(None)
     portal = ScreenCastPortal(cursor_mode=args.cursor_mode)
-    pipeline: Gst.Pipeline | None = None
+    source_pipeline: Gst.Pipeline | None = None
+    output_pipeline: Gst.Pipeline | None = None
     pipewire_fd = -1
     loop = GLib.MainLoop()
+    stop_event = threading.Event()
+    cache = LatestFrameCache()
+    metrics = CadenceMetrics()
+    scheduler: threading.Thread | None = None
     watch_parent_exit(os.getppid(), loop)
     exit_code = 0
 
     def stop(_signum: int, _frame: object) -> None:
+        stop_event.set()
         loop.quit()
 
     signal.signal(signal.SIGINT, stop)
@@ -337,30 +455,175 @@ def main() -> int:
             file=sys.stderr,
             flush=True,
         )
-        pipeline = build_pipeline(pipewire_fd, node_id, args)
-        bus = pipeline.get_bus()
-        bus.add_signal_watch()
 
-        def on_message(_bus: Gst.Bus, message: Gst.Message) -> None:
+        source_pipeline = build_source_pipeline(pipewire_fd, node_id, args)
+        output_pipeline = build_output_pipeline(args)
+        source_sink = source_pipeline.get_by_name("source_sink")
+        output_source = output_pipeline.get_by_name("output_source")
+        if source_sink is None or output_source is None:
+            raise RuntimeError("required named GStreamer element missing")
+
+        def on_sample(sink: Gst.Element) -> Gst.FlowReturn:
+            sample = sink.emit("pull-sample")
+            if sample is None:
+                return Gst.FlowReturn.ERROR
+            buffer = sample.get_buffer()
+            if buffer is None:
+                return Gst.FlowReturn.ERROR
+            stamp_ns = time.monotonic_ns()
+            payload = buffer.extract_dup(0, buffer.get_size())
+            frame = cache.replace(payload, stamp_ns)
+            if metrics.add_source(stamp_ns) == 1:
+                print(
+                    f"GNOME first source frame generation={frame.generation} "
+                    f"bytes={len(payload)}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+            return Gst.FlowReturn.OK
+
+        source_sink.connect("new-sample", on_sample)
+
+        def on_message(
+            _bus: Gst.Bus,
+            message: Gst.Message,
+            pipeline_name: str,
+        ) -> None:
             nonlocal exit_code
             if message.type == Gst.MessageType.ERROR:
                 error, details = message.parse_error()
-                print(f"GStreamer error: {error}: {details}", file=sys.stderr, flush=True)
+                print(
+                    f"GStreamer {pipeline_name} error: {error}: {details}",
+                    file=sys.stderr,
+                    flush=True,
+                )
                 exit_code = 1
+                stop_event.set()
                 loop.quit()
-            elif message.type == Gst.MessageType.EOS:
+            elif message.type == Gst.MessageType.EOS and pipeline_name == "source":
+                if not stop_event.is_set():
+                    print("GStreamer source ended unexpectedly", file=sys.stderr, flush=True)
+                    exit_code = 1
+                    stop_event.set()
                 loop.quit()
 
-        bus.connect("message", on_message)
-        if pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
-            raise RuntimeError("GStreamer pipeline failed to enter PLAYING state")
+        for pipeline_name, pipeline in (
+            ("source", source_pipeline),
+            ("output", output_pipeline),
+        ):
+            bus = pipeline.get_bus()
+            bus.add_signal_watch()
+            bus.connect("message", on_message, pipeline_name)
+
+        if output_pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
+            raise RuntimeError("GStreamer output pipeline failed to enter PLAYING state")
+        if source_pipeline.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
+            raise RuntimeError("GStreamer source pipeline failed to enter PLAYING state")
+
+        def run_scheduler() -> None:
+            nonlocal exit_code
+            while not stop_event.is_set() and not cache.wait(0.1):
+                pass
+            if stop_event.is_set():
+                return
+
+            period_ns = 1_000_000_000 / args.fps
+            start_ns = time.monotonic_ns()
+            report_ns = start_ns
+            report_source = 0
+            report_output = 0
+            last_generation: int | None = None
+            frame_index = 0
+            while not stop_event.is_set():
+                deadline_ns = start_ns + round(frame_index * period_ns)
+                remaining_ns = deadline_ns - time.monotonic_ns()
+                if remaining_ns > 0:
+                    stop_event.wait(remaining_ns / 1_000_000_000)
+                    if stop_event.is_set():
+                        break
+
+                frame = cache.snapshot()
+                if frame is None:
+                    continue
+                buffer = Gst.Buffer.new_allocate(None, len(frame.payload), None)
+                buffer.fill(0, frame.payload)
+                clock = output_pipeline.get_clock()
+                if clock is not None:
+                    buffer.pts = max(
+                        0,
+                        clock.get_time() - output_pipeline.get_base_time(),
+                    )
+                else:
+                    buffer.pts = round(frame_index * Gst.SECOND / args.fps)
+                buffer.dts = Gst.CLOCK_TIME_NONE
+                buffer.duration = round(Gst.SECOND / args.fps)
+
+                repeated = last_generation == frame.generation
+                push_ns = time.monotonic_ns()
+                result = output_source.emit("push-buffer", buffer)
+                if result != Gst.FlowReturn.OK:
+                    if not stop_event.is_set():
+                        print(
+                            f"GStreamer appsrc push failed: {result}",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                        exit_code = 1
+                    stop_event.set()
+                    GLib.idle_add(loop.quit)
+                    return
+                metrics.add_output(push_ns, repeated)
+                if frame_index == 0:
+                    print("GNOME first clocked output frame", file=sys.stderr, flush=True)
+                last_generation = frame.generation
+                frame_index += 1
+
+                now_ns = time.monotonic_ns()
+                if now_ns - report_ns >= 5_000_000_000:
+                    (
+                        source_count,
+                        output_count,
+                        new_count,
+                        repeated_count,
+                        max_gap,
+                        startup_ms,
+                    ) = metrics.snapshot()
+                    elapsed = (now_ns - report_ns) / 1_000_000_000
+                    print(
+                        "GNOME cadence "
+                        f"source_fps={(source_count - report_source) / elapsed:.2f} "
+                        f"output_fps={(output_count - report_output) / elapsed:.2f} "
+                        f"source={source_count} output={output_count} "
+                        f"new={new_count} repeated={repeated_count} "
+                        f"max_gap_ms={max_gap:.3f} "
+                        f"startup_ms={startup_ms if startup_ms is not None else -1:.3f}",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                    report_ns = now_ns
+                    report_source = source_count
+                    report_output = output_count
+
+            output_source.emit("end-of-stream")
+
+        scheduler = threading.Thread(
+            target=run_scheduler,
+            name="usbdisplay-gnome-clock",
+            daemon=True,
+        )
+        scheduler.start()
         loop.run()
     except (GLib.Error, PortalError, RuntimeError, KeyError) as error:
         print(f"GNOME capture failed: {error}", file=sys.stderr, flush=True)
         exit_code = 1
     finally:
-        if pipeline is not None:
-            pipeline.set_state(Gst.State.NULL)
+        stop_event.set()
+        if source_pipeline is not None:
+            source_pipeline.set_state(Gst.State.NULL)
+        if output_pipeline is not None:
+            output_pipeline.set_state(Gst.State.NULL)
+        if scheduler is not None:
+            scheduler.join(timeout=3)
         portal.close()
         if pipewire_fd >= 0:
             os.close(pipewire_fd)
