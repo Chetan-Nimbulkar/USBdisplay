@@ -10,8 +10,10 @@ __pycache__/
 # Build artifacts
 target/
 *.apk
+!/android/USBdisplay-0.95-Beta.apk
 
 # Local/generated experiment binaries
 experiments/phase42c_cursor_probe
+/bridge/gnome_capture_native
 
 

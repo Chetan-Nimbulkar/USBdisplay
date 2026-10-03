@@ -94,6 +94,26 @@ class CompositorBackend:
     def cleanup_output(self, name: str, keep: bool) -> None:
         raise NotImplementedError
 
+    def confirm_output(
+        self,
+        name: str,
+        width: int,
+        height: int,
+        refresh: int,
+    ) -> None:
+        """Finalize and verify output geometry immediately before capture."""
+        return
+
+    def validate_output(
+        self,
+        name: str,
+        width: int,
+        height: int,
+        refresh: int,
+    ) -> None:
+        """Raise if a compositor-managed output changed during the session."""
+        return
+
     def create_producer(
         self,
         *,
@@ -116,23 +136,47 @@ class CompositorBackend:
 
 class HyprlandBackend(CompositorBackend):
     name = "hyprland"
+    REFRESH_TOLERANCE = 0.5
 
     def __init__(self) -> None:
         self.created_output = False
+        self.monitor_manager_paused = False
 
     def required_programs(self, codec: str) -> list[str]:
         return ["adb", "hyprctl", "wf-recorder" if codec == "h264" else "grim"]
 
     @staticmethod
-    def monitor_names() -> set[str]:
+    def monitor_states() -> list[dict[str, object]]:
         result = _command("hyprctl", "-j", "monitors", "all", capture=True)
-        return {monitor["name"] for monitor in json.loads(result.stdout)}
+        try:
+            monitors = json.loads(result.stdout)
+        except json.JSONDecodeError as error:
+            raise RuntimeError("Hyprland returned invalid monitor JSON") from error
+        if not isinstance(monitors, list):
+            raise RuntimeError("Hyprland returned an invalid monitor list")
+        return [monitor for monitor in monitors if isinstance(monitor, dict)]
 
-    def prepare_output(self, name: str, width: int, height: int, refresh: int) -> None:
-        self.created_output = name not in self.monitor_names()
-        if self.created_output:
-            _command("hyprctl", "output", "create", "headless", name)
+    @classmethod
+    def monitor_state(cls, name: str) -> dict[str, object] | None:
+        return next(
+            (
+                monitor
+                for monitor in cls.monitor_states()
+                if monitor.get("name") == name
+            ),
+            None,
+        )
 
+    @classmethod
+    def monitor_names(cls) -> set[str]:
+        return {
+            str(monitor["name"])
+            for monitor in cls.monitor_states()
+            if "name" in monitor
+        }
+
+    @staticmethod
+    def _apply_mode(name: str, width: int, height: int, refresh: int) -> None:
         mode = f"{width}x{height}@{refresh}"
         lua = (
             "hl.monitor({ output = "
@@ -141,23 +185,156 @@ class HyprlandBackend(CompositorBackend):
             + json.dumps(mode)
             + ', position = "auto-right", scale = 1 })'
         )
+        _command("hyprctl", "eval", lua)
+
+    @classmethod
+    def _verified_geometry(
+        cls,
+        name: str,
+        width: int,
+        height: int,
+        refresh: int,
+    ) -> tuple[int, int, float]:
+        monitor = cls.monitor_state(name)
+        if monitor is None:
+            raise RuntimeError(f"Hyprland output {name} disappeared")
         try:
-            _command("hyprctl", "eval", lua)
-            if name not in self.monitor_names():
+            actual_width = int(monitor["width"])
+            actual_height = int(monitor["height"])
+            actual_refresh = float(monitor["refreshRate"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise RuntimeError(
+                f"Hyprland output {name} did not report valid geometry"
+            ) from error
+        if (
+            actual_width != width
+            or actual_height != height
+            or abs(actual_refresh - refresh) > cls.REFRESH_TOLERANCE
+        ):
+            raise RuntimeError(
+                f"Hyprland output {name} geometry changed: expected "
+                f"{width}x{height}@{refresh}, got "
+                f"{actual_width}x{actual_height}@{actual_refresh:.2f}"
+            )
+        return actual_width, actual_height, actual_refresh
+
+    def _pause_monitor_manager(self) -> None:
+        if shutil.which("systemctl") is None:
+            return
+        status = subprocess.run(
+            ["systemctl", "--user", "is-active", "--quiet", "hyprmoncfgd.service"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=5,
+        )
+        if status.returncode != 0:
+            return
+        LOG.info(
+            "temporarily masking hyprmoncfgd while USBDisplay owns the virtual output"
+        )
+        _command(
+            "systemctl", "--user", "mask", "--runtime", "--now",
+            "hyprmoncfgd.service",
+        )
+        self.monitor_manager_paused = True
+
+    def _resume_monitor_manager(self) -> None:
+        if not self.monitor_manager_paused:
+            return
+        unmasked = subprocess.run(
+            [
+                "systemctl",
+                "--user",
+                "unmask",
+                "--runtime",
+                "hyprmoncfgd.service",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=15,
+        )
+        if unmasked.returncode:
+            LOG.warning(
+                "could not unmask hyprmoncfgd; run systemctl --user "
+                "unmask --runtime hyprmoncfgd.service"
+            )
+            self.monitor_manager_paused = False
+            return
+        result = subprocess.run(
+            ["systemctl", "--user", "start", "hyprmoncfgd.service"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=15,
+        )
+        if result.returncode:
+            LOG.warning(
+                "could not restart hyprmoncfgd; run "
+                "systemctl --user start hyprmoncfgd.service"
+            )
+        else:
+            LOG.info("restored hyprmoncfgd after USBDisplay teardown")
+        self.monitor_manager_paused = False
+
+    def prepare_output(self, name: str, width: int, height: int, refresh: int) -> None:
+        self._pause_monitor_manager()
+        self.created_output = self.monitor_state(name) is None
+        if self.created_output:
+            _command("hyprctl", "output", "create", "headless", name)
+
+        try:
+            self._apply_mode(name, width, height, refresh)
+            if self.monitor_state(name) is None:
                 raise RuntimeError(f"Hyprland did not expose output {name}")
         except Exception:
             self.cleanup_output(name, keep=False)
             raise
 
+    def confirm_output(
+        self,
+        name: str,
+        width: int,
+        height: int,
+        refresh: int,
+    ) -> None:
+        self._apply_mode(name, width, height, refresh)
+        actual_width, actual_height, actual_refresh = self._verified_geometry(
+            name,
+            width,
+            height,
+            refresh,
+        )
+        LOG.info(
+            "verified Hyprland output %s at %dx%d@%.2f",
+            name,
+            actual_width,
+            actual_height,
+            actual_refresh,
+        )
+
+    def validate_output(
+        self,
+        name: str,
+        width: int,
+        height: int,
+        refresh: int,
+    ) -> None:
+        self._verified_geometry(name, width, height, refresh)
+
     def cleanup_output(self, name: str, keep: bool) -> None:
-        if self.created_output and not keep:
-            LOG.info("removing temporary Hyprland output %s", name)
-            subprocess.run(
-                ["hyprctl", "output", "remove", name],
-                check=False,
-                timeout=15,
-            )
-            self.created_output = False
+        try:
+            if self.created_output and not keep:
+                LOG.info("removing temporary Hyprland output %s", name)
+                subprocess.run(
+                    ["hyprctl", "output", "remove", name],
+                    check=False,
+                    timeout=15,
+                )
+                self.created_output = False
+        finally:
+            self._resume_monitor_manager()
 
     def create_producer(self, **options: object) -> Producer:
         codec = str(options["codec"])
@@ -190,6 +367,12 @@ class GnomeBackend(CompositorBackend):
         super().validate(codec)
         if codec != "h264":
             raise RuntimeError("the GNOME backend currently supports only --codec h264")
+        native_helper = Path(__file__).with_name("gnome_capture_native")
+        if not native_helper.is_file() or not os.access(native_helper, os.X_OK):
+            raise RuntimeError(
+                "missing native GNOME capture helper; "
+                "run tools/build_gnome_capture_native.sh"
+            )
         bindings = subprocess.run(
             [
                 sys.executable,
@@ -234,7 +417,7 @@ class GnomeBackend(CompositorBackend):
 
     @staticmethod
     def _helper_argv_markers() -> tuple[str, str]:
-        return ("gnome_capture.py", "--width")
+        return ("gnome_capture_metadata.py", "--width")
 
     def _reap_helper_processes(self) -> None:
         """Terminate leftover capture helpers by exact argv match.
@@ -296,7 +479,7 @@ class GnomeBackend(CompositorBackend):
             LOG.info("reaped %d leftover GNOME capture helper(s)", len(targets))
 
     def create_producer(self, **options: object) -> Producer:
-        helper = Path(__file__).with_name("gnome_capture.py")
+        helper = Path(__file__).with_name("gnome_capture_metadata.py")
         if not bool(options["constant_fps"]):
             LOG.warning("--damage-aware is ignored by the GNOME portal backend")
         crf = int(options["crf"])

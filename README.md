@@ -2,7 +2,7 @@
 
 Low-latency Android second display for Wayland over a USB cable.
 
-Current beta release: **0.91-Beta**.
+Current beta release: **0.95-Beta**.
 
 ## Current status
 
@@ -32,10 +32,21 @@ Connect the tablet with USB debugging enabled, then run:
 ./USBdisplay
 ```
 
-By default, USBDisplay reads the tablet's physical panel size, preserves its
-aspect ratio, selects landscape orientation, avoids upscaling, and caps the
-long edge at 1280 pixels. For example, a 1200×1920 tablet automatically uses
-1280×800. Use portrait orientation explicitly:
+Before starting a session, run the read-only compatibility check:
+
+```bash
+./USBdisplay --check
+```
+
+It reports the detected backend, required host tools, selected physical USB
+device, receiver installation, panel size, current orientation, and recommended
+landscape and portrait stream modes. It does not create a virtual display or
+launch the Android receiver. Audio routing is not supported in v0.95-Beta.
+
+By default, USBDisplay reads the tablet's physical panel size and current
+orientation, preserves its aspect ratio, avoids upscaling, and caps the long
+edge at 1280 pixels. For example, a 1200×1920 tablet uses 1280×800 when it is
+landscape and 800×1280 when it is portrait. Force portrait stream geometry with:
 
 ```bash
 ./USBdisplay --vertical
@@ -67,7 +78,8 @@ physical path can change when the cable is moved to another laptop port.
 Useful options:
 
 - `--version`: print the USBDisplay release version.
-- `--install`: reinstall the bundled `android/USBdisplay-0.91-Beta.apk` receiver.
+- `--install`: reinstall the bundled `android/USBdisplay-0.95-Beta.apk` receiver.
+- `--check`: run the read-only host/device compatibility preflight.
 - `--vertical`: automatically select the tablet's portrait resolution.
 - `--resolution WIDTHxHEIGHT`: bypass automatic sizing with an exact size.
 - `--compositor auto|hyprland|gnome|kde`: override automatic detection.

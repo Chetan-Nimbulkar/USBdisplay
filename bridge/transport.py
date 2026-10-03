@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import logging
 import queue
 import socket
@@ -112,8 +113,13 @@ class SocketWriter(threading.Thread):
         self.ready = threading.Event()
         self.connected = threading.Event()
         self.failure: BaseException | None = None
+        self.peer_disconnected = False
+        self.terminal_reason: str | None = None
         self.frames_sent = 0
         self.bytes_sent = 0
+        self.min_frame_interval_ms: float | None = None
+        self.max_frame_interval_ms = 0.0
+        self._last_frame_sent_at: float | None = None
         self._listener: socket.socket | None = None
         self._connection: socket.socket | None = None
 
@@ -130,12 +136,45 @@ class SocketWriter(threading.Thread):
                 except OSError:
                     pass
 
+    @staticmethod
+    def _is_peer_disconnect(error: OSError) -> bool:
+        return isinstance(
+            error,
+            (BrokenPipeError, ConnectionResetError, ConnectionAbortedError),
+        ) or error.errno in (errno.EPIPE, errno.ECONNRESET, errno.ECONNABORTED)
+
+    def _record_send(self) -> None:
+        now = time.monotonic()
+        if self._last_frame_sent_at is not None:
+            interval_ms = (now - self._last_frame_sent_at) * 1000
+            if self.min_frame_interval_ms is None:
+                self.min_frame_interval_ms = interval_ms
+            else:
+                self.min_frame_interval_ms = min(
+                    self.min_frame_interval_ms,
+                    interval_ms,
+                )
+            self.max_frame_interval_ms = max(self.max_frame_interval_ms, interval_ms)
+        self._last_frame_sent_at = now
+
     def run(self) -> None:
         try:
             self._run()
+        except OSError as error:
+            if not self.stop_event.is_set() and self._is_peer_disconnect(error):
+                self.peer_disconnected = True
+                self.terminal_reason = "receiver disconnected"
+                LOG.info("receiver connection closed: %s", error)
+                self.stop_event.set()
+            elif not self.stop_event.is_set():
+                self.failure = error
+                self.terminal_reason = f"socket failure: {error}"
+                LOG.error("socket writer failed: %s", error)
+                self.stop_event.set()
         except BaseException as error:
             if not self.stop_event.is_set():
                 self.failure = error
+                self.terminal_reason = f"socket failure: {error}"
                 LOG.error("socket writer failed: %s", error)
                 self.stop_event.set()
         finally:
@@ -180,6 +219,7 @@ class SocketWriter(threading.Thread):
                         flags=frame.flags,
                     )
                     connection.sendall(packet)
+                    self._record_send()
                     sequence = (sequence + 1) & 0xFFFFFFFF
                     self.frames_sent += 1
                     self.bytes_sent += len(packet)

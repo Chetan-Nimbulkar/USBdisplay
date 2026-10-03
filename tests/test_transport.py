@@ -1,9 +1,10 @@
 import threading
 import time
 import unittest
+from unittest import mock
 
 from bridge.protocol import CODEC_H264, CODEC_MJPEG
-from bridge.transport import EncodedFrame, LatestFrameQueue
+from bridge.transport import EncodedFrame, LatestFrameQueue, SocketWriter
 
 
 def frame(codec: int, marker: bytes, keyframe: bool = False) -> EncodedFrame:
@@ -63,6 +64,31 @@ class LatestFrameQueueTests(unittest.TestCase):
         self.assertFalse(writer.is_alive())
         self.assertEqual(result, [False])
         self.assertEqual(frames.dropped, 0)
+
+
+class SocketWriterLifecycleTests(unittest.TestCase):
+    def test_broken_pipe_is_one_terminal_peer_disconnect(self) -> None:
+        stop = threading.Event()
+        writer = SocketWriter(LatestFrameQueue(1), stop, "127.0.0.1", 18958)
+
+        with mock.patch.object(writer, "_run", side_effect=BrokenPipeError(32, "pipe")):
+            writer.run()
+
+        self.assertTrue(stop.is_set())
+        self.assertTrue(writer.peer_disconnected)
+        self.assertIsNone(writer.failure)
+        self.assertEqual(writer.terminal_reason, "receiver disconnected")
+
+    def test_unexpected_socket_error_remains_a_failure(self) -> None:
+        stop = threading.Event()
+        writer = SocketWriter(LatestFrameQueue(1), stop, "127.0.0.1", 18958)
+
+        with mock.patch.object(writer, "_run", side_effect=TimeoutError("timed out")):
+            writer.run()
+
+        self.assertTrue(stop.is_set())
+        self.assertFalse(writer.peer_disconnected)
+        self.assertIsInstance(writer.failure, TimeoutError)
 
 
 if __name__ == "__main__":
